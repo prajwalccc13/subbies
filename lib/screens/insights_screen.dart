@@ -62,11 +62,20 @@ class InsightsScreen extends StatelessWidget {
                 _StatRow(
                   label: 'Average subscription',
                   value:
-                      '${formatCents(total / controller.subscriptions.length)}/mo',
+                      '${formatCents(total / controller.chargingCount)}/mo',
                 ),
                 if (priciest != null) ...[
                   const Divider(indent: 16, endIndent: 16),
                   _StatRow(label: 'Most expensive', value: priciest.name),
+                ],
+
+                // a little motivation for pausing things you don't use.
+                if (controller.pausedMonthlyCents > 0) ...[
+                  const Divider(indent: 16, endIndent: 16),
+                  _StatRow(
+                    label: 'Saved by pausing',
+                    value: '${formatCents(controller.pausedMonthlyCents)}/mo',
+                  ),
                 ],
               ],
             ),

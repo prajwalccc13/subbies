@@ -138,3 +138,9 @@ extension CategoryColor on SubscriptionCategory {
         SubscriptionCategory.other => const Color(0xFFC58B2B),
   };
 }
+
+
+Color trialColor(BuildContext context) => 
+  Theme.of(context).brightness == Brightness.dark
+    ? const Color(0xFFF0B054)
+    : const Color(0xFF9A5B00);

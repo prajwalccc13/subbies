@@ -100,4 +100,55 @@ void main() {
     expect(copy.category, s.category);
     expect(copy.startDate, s.startDate);
   });
+
+    // NEW ---------------------------------------------------------------------
+  group('trials and pausing', () {
+    test('data saved before Phase 2 still loads', () {
+      // Exactly what the OLD app saved: no isFreeTrial, no isPaused.
+      final oldJson = {
+        'id': '1',
+        'name': 'Old subscription',
+        'priceCents': 999,
+        'cycle': 'monthly',
+        'category': 'music',
+        'startDate': '2025-03-01T00:00:00.000',
+      };
+
+      final s = Subscription.fromJson(oldJson);
+
+      expect(s.isFreeTrial, isFalse);
+      expect(s.isPaused, isFalse);
+    });
+
+    test('a trial is free up to and including its end date', () {
+      final s = Subscription(
+        id: '1',
+        name: 'Trial',
+        priceCents: 1399,
+        cycle: BillingCycle.monthly,
+        category: SubscriptionCategory.entertainment,
+        startDate: DateTime(2026, 10, 10),
+        isFreeTrial: true,
+      );
+
+      expect(s.isOnTrial(DateTime(2026, 10, 9)), isTrue); // Day before
+      expect(s.isOnTrial(DateTime(2026, 10, 10)), isTrue); // Last day
+      expect(s.isOnTrial(DateTime(2026, 10, 11)), isFalse); // Converted
+      expect(s.countsTowardSpend(DateTime(2026, 10, 11)), isTrue);
+    });
+
+    test('a paused subscription never counts toward spend', () {
+      final s = Subscription(
+        id: '1',
+        name: 'Gym',
+        priceCents: 4500,
+        cycle: BillingCycle.monthly,
+        category: SubscriptionCategory.health,
+        startDate: DateTime(2026, 1, 1),
+        isPaused: true,
+      );
+
+      expect(s.countsTowardSpend(DateTime(2026, 10, 1)), isFalse);
+    });
+  });
 }

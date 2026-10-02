@@ -31,7 +31,9 @@ class Subscription {
     required this.priceCents,
     required this.cycle,
     required this.category,
-    required this.startDate
+    required this.startDate,
+    this.isFreeTrial = false,
+    this.isPaused = false,
   });
 
   final String id;
@@ -41,6 +43,9 @@ class Subscription {
   final BillingCycle cycle;
   final SubscriptionCategory category;
   final DateTime startDate;
+  final bool isFreeTrial;
+  final bool isPaused;
+
 
   double get monthlyCents => switch(cycle) {
     BillingCycle.weekly => priceCents * 52 / 12,
@@ -49,6 +54,18 @@ class Subscription {
   };
 
   double get yearlyCents => monthlyCents * 12;
+
+  bool isOnTrial(DateTime today) {
+    if(!isFreeTrial) return false;
+    final todayDate = DateTime(today.year, today.month, today.day);
+    final trialEnd = DateTime(startDate.year, startDate.month, startDate.day);
+    
+    return !todayDate.isAfter(trialEnd);
+  }
+
+   /// Should this subscription count in "what am I paying"?
+  /// Not if it's paused, and not while the free trial is running.
+  bool countsTowardSpend(DateTime today) => !isPaused && !isOnTrial(today);
 
   DateTime nextRenewal(DateTime today) {
     final todayDate = DateTime(today.year, today.month, today.day);
@@ -96,6 +113,8 @@ class Subscription {
     'cycle': cycle.name,
     'category': category.name,
     'startDate': startDate.toIso8601String(),
+    'isFreeTrial': isFreeTrial, 
+    'isPaused': isPaused,
   };
 
   factory Subscription.fromJson(Map<String, dynamic> json) => Subscription(
@@ -105,6 +124,8 @@ class Subscription {
     cycle: BillingCycle.values.byName(json['cycle'] as String),
     category: SubscriptionCategory.values.byName(json['category'] as String),
     startDate: DateTime.parse(json['startDate'] as String),
+    isFreeTrial: json['isFreeTrial'] as bool? ?? false,
+    isPaused: json['isPaused'] as bool? ?? false,
   );
 
 }

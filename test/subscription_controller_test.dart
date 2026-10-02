@@ -13,13 +13,22 @@ import 'package:subbies/state/subscriptions_controller.dart';
 import 'fakes/fake_repositories.dart';
 
 // Helper: a monthly subscription with a given id and price.
-Subscription sub(String id, int priceCents) => Subscription(
+Subscription sub(
+  String id,
+  int priceCents, {
+  bool isPaused = false,
+  bool isFreeTrial = false,
+  DateTime? start,
+}) =>
+    Subscription(
       id: id,
       name: 'Sub $id',
       priceCents: priceCents,
       cycle: BillingCycle.monthly,
       category: SubscriptionCategory.other,
-      startDate: DateTime(2026, 1, 1),
+      startDate: start ?? DateTime(2026, 1, 1),
+      isPaused: isPaused,
+      isFreeTrial: isFreeTrial,
     );
 
 void main() {
@@ -70,5 +79,25 @@ void main() {
 
     expect(controller.isLoading, isFalse); // No endless spinner
     expect(controller.subscriptions, isEmpty);
+  });
+
+    // NEW
+  test('totals leave out paused subscriptions and running trials', () async {
+    final controller = SubscriptionsController(
+      InMemorySubscriptionRepository([
+        sub('paying', 1000),
+        sub('paused', 500, isPaused: true),
+        sub('trial', 1299, isFreeTrial: true, start: DateTime(2026, 10, 5)),
+      ]),
+      // A fixed "today", so this test gives the same result forever.
+      clock: () => DateTime(2026, 10, 1),
+    );
+    await controller.load();
+
+    expect(controller.monthlyTotalCents, 1000); // Only 'paying'
+    expect(controller.chargingCount, 1);
+    expect(controller.pausedMonthlyCents, 500);
+    // .map(...) turns each subscription into its id, to compare easily.
+    expect(controller.activeTrials.map((s) => s.id), ['trial']);
   });
 }

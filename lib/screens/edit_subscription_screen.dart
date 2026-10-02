@@ -32,9 +32,11 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
   BillingCycle _cycle = BillingCycle.monthly;
   SubscriptionCategory _category = SubscriptionCategory.entertainment;
   DateTime _startDate = DateTime.now();
+  bool _isFreeTrial = false;
+  bool _isPaused = false;
 
   bool get _isEditing => widget.existing != null;
-
+  
   @override
   void initState() {
     super.initState();
@@ -45,6 +47,8 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
       _cycle = existing.cycle;
       _category = existing.category;
       _startDate = existing.startDate;
+      _isFreeTrial = existing.isFreeTrial;
+      _isPaused = existing.isPaused; 
     }
   }
 
@@ -65,6 +69,18 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
     if (picked != null && mounted) setState(() => _startDate = picked);
   }
 
+  void _setFreeTrial(bool value) {
+    setState(() {
+      _isFreeTrial = value;
+       // Trials end in the future. If the date is still today (or earlier),
+      // move it a week ahead as a sensible starting point the user can
+      // adjust. A small touch that saves a tap.
+      if (value && !_startDate.isAfter(DateTime.now())) {
+        _startDate = DateTime.now().add(const Duration(days: 7));
+      }
+    });
+  }
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -76,6 +92,8 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
       cycle: _cycle,
       category: _category,
       startDate: DateUtils.dateOnly(_startDate), // Drop the time of day
+      isFreeTrial: _isFreeTrial,
+      isPaused: _isPaused,
     );
 
     final controller = context.read<SubscriptionsController>();
@@ -233,10 +251,39 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
               ),
               const SizedBox(height: 20),
 
-              const _FieldLabel('First charged on'),
+              // Status section
+              const _FieldLabel('Status'),
+              Material(
+                color: colors.surfaceContainerLowest,
+                borderRadius: BorderRadius.circular(12),
+                clipBehavior: Clip.antiAlias,
+                child: Column(
+                  children: [
+                    SwitchListTile(
+                      title: const Text('Free Trail'),
+                      subtitle: const Text('Nothing is charged until it ends.'),
+                      value: _isFreeTrial,
+                      onChanged: _setFreeTrial,
+                    ),
+                    const Divider(indent: 16, endIndent: 16),
+                    SwitchListTile(
+                      title: const Text('Paused'),
+                      subtitle: const Text('Left out of your totals for now.'),
+                      value: _isPaused,
+                      onChanged: (value) => setState(() => _isPaused = value),
+                    ),
+                  ],
+                ),
+              ),
+
+              _FieldLabel(_isFreeTrial ? 'Trial ends on' : 'First charged on'),
               OutlinedButton.icon(
                 onPressed: _pickDate,
-                icon: const Icon(Icons.event_outlined),
+                icon: Icon(
+                  _isFreeTrial
+                    ? Icons.hourglass_bottom_rounded
+                    : Icons.event_outlined,
+                ),
                 label: Text(DateFormat('d MMMM y').format(_startDate)),
                 style: OutlinedButton.styleFrom(
                   alignment: Alignment.centerLeft,
@@ -250,6 +297,15 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
                 ),
               ),
               const SizedBox(height: 8),
+
+              Text(
+                _isFreeTrial
+                    ? 'first payment on this date unless you cancel.'
+                    : 'Used to work out when it renews next.',
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(color: colors.onSurfaceVariant),
+              ),
+              const SizedBox(height: 32),
 
               FilledButton(
                 onPressed: _save,
