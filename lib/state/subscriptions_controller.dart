@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
 import 'package:subbies/data/subscription_repository.dart';
 import 'package:subbies/models/subscription.dart';
 
@@ -9,8 +12,10 @@ class SubscriptionsController extends ChangeNotifier {
   SubscriptionsController(this._repository, {DateTime Function()? clock})
     : _clock = clock ?? DateTime.now;
 
-  final SubscriptionRepository _repository;
+  SubscriptionRepository _repository;
   final DateTime Function() _clock;
+
+  StreamSubscription<List<Subscription>>? _watching;
 
   List<Subscription> _subscriptions = [];
   bool _isLoading = true;
@@ -19,6 +24,43 @@ class SubscriptionsController extends ChangeNotifier {
   bool get isLoading => _isLoading;
 
   DateTime get _today => _clock(); 
+
+  /// Start watching the current repository.
+  Future<void> load() => _watch(_repository);
+
+  /// stop watching the current repository and start watching another
+  Future<void> switchTo(SubscriptionRepository repository) {
+    _repository = repository;
+    return _watch(repository);
+  }
+
+  /// Listens to the repository's stream. The Future it returns finishes
+  /// when the FIRST list arrives, so callers can `await` "loaded".
+  Future<void> _watch(SubscriptionRepository repository) {
+    _watching?.cancel(); // Stop listening to the old one, if any
+    _isLoading = true;
+    notifyListeners();
+
+    final firstData = Completer<void>();
+
+    _watching = repository.watchAll().listen(
+      (items) {
+        _subscriptions = [...items];
+        _isLoading = false;
+        notifyListeners();
+        if (!firstData.isCompleted) firstData.complete();
+      },
+      onError: (Object error) {
+        debugPrint('Could not load subscriptions: $error');
+        _isLoading = false;
+        notifyListeners();
+        if (!firstData.isCompleted) firstData.complete();
+      },
+    );
+
+    return firstData.future;
+  }
+
 
   /// subscriptions currently costing money (not paused, not on trial).
   List<Subscription> get _charging {
@@ -80,19 +122,6 @@ class SubscriptionsController extends ChangeNotifier {
     return sorted;
   }
 
-
-  Future<void> load() async {
-    try {
-      _subscriptions = await _repository.fetchAll();
-    } catch (error) {
-      debugPrint('Could not load subscriptions: $error');
-      _subscriptions = [];
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
   Future<void> save(Subscription subscription) async {
     final index = _subscriptions.indexWhere((s) => s.id == subscription.id);
     if (index == -1) {
@@ -116,6 +145,13 @@ class SubscriptionsController extends ChangeNotifier {
     } catch (error) {
       debugPrint('Could not delete ${subscription.name}: $error');
     }
+  }
+
+  // stop listening when the controller is thrown away.
+  @override
+  void dispose() {
+    _watching?.cancel();
+    super.dispose();
   }
 
 }

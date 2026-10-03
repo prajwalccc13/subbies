@@ -96,12 +96,15 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
       isPaused: _isPaused,
     );
 
+    // final controller = context.read<SubscriptionsController>();
+    // final navigator = Navigator.of(context);
+
+    // await controller.save(subscription);
+    // navigator.pop();
+
     final controller = context.read<SubscriptionsController>();
-    final navigator = Navigator.of(context);
-
+    Navigator.of(context).pop();
     await controller.save(subscription);
-    navigator.pop();
-
   }
 
   Future<void> _delete() async {

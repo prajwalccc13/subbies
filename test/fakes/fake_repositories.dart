@@ -1,24 +1,37 @@
 // =============================================================================
 // test/fakes/fake_repositories.dart — STAND-INS FOR TESTING
 // =============================================================================
-// "Fakes" are simple pretend versions of real parts. Because the controller
-// only knows the CONTRACT, it can't tell these apart from the real thing.
-// =============================================================================
+
+import 'dart:async';
 
 import 'package:subbies/data/subscription_repository.dart';
 import 'package:subbies/models/subscription.dart';
 
-/// Keeps subscriptions in a plain list. Nothing is saved anywhere.
+/// Keeps subscriptions in a plain list, and announces every change.
 class InMemorySubscriptionRepository implements SubscriptionRepository {
-  // Square brackets = an optional parameter. Pass a starting list, or none.
-  // The part after `:` copies it into our own private list.
   InMemorySubscriptionRepository([List<Subscription> initial = const []])
       : _items = [...initial];
 
   final List<Subscription> _items;
+  final _watchers = <StreamController<List<Subscription>>>{};
 
   @override
   Future<List<Subscription>> fetchAll() async => [..._items];
+
+  @override
+  Stream<List<Subscription>> watchAll() {
+    late final StreamController<List<Subscription>> controller;
+    controller = StreamController<List<Subscription>>(
+      onListen: () {
+        _watchers.add(controller);
+        controller.add([..._items]); // Current list first
+      },
+      onCancel: () {
+        _watchers.remove(controller);
+      },
+    );
+    return controller.stream;
+  }
 
   @override
   Future<void> upsert(Subscription subscription) async {
@@ -28,11 +41,20 @@ class InMemorySubscriptionRepository implements SubscriptionRepository {
     } else {
       _items[index] = subscription;
     }
+    _notify();
   }
 
   @override
-  Future<void> delete(String id) async =>
-      _items.removeWhere((s) => s.id == id);
+  Future<void> delete(String id) async {
+    _items.removeWhere((s) => s.id == id);
+    _notify();
+  }
+
+  void _notify() {
+    for (final watcher in _watchers) {
+      watcher.add([..._items]);
+    }
+  }
 }
 
 /// Fails at everything, to test that the app copes with errors.
@@ -40,6 +62,11 @@ class FailingSubscriptionRepository implements SubscriptionRepository {
   @override
   Future<List<Subscription>> fetchAll() async =>
       throw Exception('Storage unavailable');
+
+  // A stream whose only event is an error.
+  @override
+  Stream<List<Subscription>> watchAll() =>
+      Stream.error(Exception('Storage unavailable'));
 
   @override
   Future<void> upsert(Subscription subscription) async =>

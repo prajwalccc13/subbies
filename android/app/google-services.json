@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "556729817485",
+    "project_id": "subbies-app",
+    "storage_bucket": "subbies-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:556729817485:android:234c8d6063e3d4cd2b45c4",
+        "android_client_info": {
+          "package_name": "com.example.subbies"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkZPMXt0blgDLVb9ncnMyz2EUfx6vDQqI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
