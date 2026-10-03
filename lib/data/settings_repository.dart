@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class SettingsRepository {
 
   static const _themeKey = 'theme_mode';
+  static const _remindersKey = 'reminders_enabled';
 
   Future<ThemeMode> loadThemeMode() async {
     final prefs = await SharedPreferences.getInstance();
@@ -19,4 +20,15 @@ class SettingsRepository {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_themeKey, mode.name);
   }
+
+  Future<bool> loadRemindersEnabled() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_remindersKey) ?? false;
+  }
+
+  Future<void> saveRemindersEnabled(bool enabled) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_remindersKey, enabled);
+  }
+
 }

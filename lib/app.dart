@@ -6,8 +6,8 @@ import 'package:subbies/state/settings_controller.dart';
 import 'package:subbies/theme/app_theme.dart';
 
 
-class RecurringApp extends StatelessWidget {
-  const RecurringApp({super.key});
+class SubbiesApp extends StatelessWidget {
+  const SubbiesApp({super.key});
 
   @override
   Widget build(BuildContext context) {
