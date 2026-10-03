@@ -45,7 +45,7 @@ class SubscriptionsController extends ChangeNotifier {
 
   Future<void> load() async {
     try {
-      _subscriptions = await _repository.load();
+      _subscriptions = await _repository.fetchAll();
     } catch (error) {
       debugPrint('Could not load subscriptions: $error');
       _subscriptions = [];
@@ -63,20 +63,20 @@ class SubscriptionsController extends ChangeNotifier {
       _subscriptions[index] = subscription;
     }
     notifyListeners();
-    await _persist();
+    try {
+      await _repository.upsert(subscription);
+    } catch (error) {
+      debugPrint('Could not save ${subscription.name}: $error');
+    }
   }
 
   Future<void> delete(Subscription subscription) async {
     _subscriptions.removeWhere((s) => s.id == subscription.id);
     notifyListeners();
-    await _persist();
-  }
-
-  Future<void> _persist() async {
     try {
-      await _repository.save(_subscriptions);
+      await _repository.delete(subscription.id);
     } catch (error) {
-      debugPrint('Could not save subscriptions: $error');
+      debugPrint('Could not delete ${subscription.name}: $error');
     }
   }
 
