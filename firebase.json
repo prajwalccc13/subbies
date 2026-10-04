@@ -1,1 +1,39 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"subbies-app","appId":"1:556729817485:android:234c8d6063e3d4cd2b45c4","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"subbies-app","configurations":{"android":"1:556729817485:android:234c8d6063e3d4cd2b45c4","ios":"1:556729817485:ios:b97f3b56d6b3eba42b45c4","macos":"1:556729817485:ios:ab2055e80d2305632b45c4","web":"1:556729817485:web:fb75c3ede0005fb62b45c4","windows":"1:556729817485:web:105c33703558a1b02b45c4"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "subbies-app",
+          "appId": "1:556729817485:android:234c8d6063e3d4cd2b45c4",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "subbies-app",
+          "configurations": {
+            "android": "1:556729817485:android:234c8d6063e3d4cd2b45c4",
+            "ios": "1:556729817485:ios:b97f3b56d6b3eba42b45c4",
+            "macos": "1:556729817485:ios:ab2055e80d2305632b45c4",
+            "web": "1:556729817485:web:fb75c3ede0005fb62b45c4",
+            "windows": "1:556729817485:web:105c33703558a1b02b45c4"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

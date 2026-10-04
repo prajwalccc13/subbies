@@ -5,6 +5,7 @@ import 'package:subbies/models/subscription.dart';
 import 'package:subbies/theme/app_theme.dart';
 import 'package:subbies/utils/money.dart';
 import 'package:subbies/widgets/monogram.dart';
+import 'package:subbies/layout/app_layout.dart';
 
 
 class SubscriptionTile extends StatelessWidget {
@@ -13,11 +14,13 @@ class SubscriptionTile extends StatelessWidget {
     required this.subscription,
     required this.today,
     required this.onTap,
+    this.selected = false,
   });
 
   final Subscription subscription;
   final DateTime today;
   final VoidCallback onTap;
+  final bool selected;
 
   @override
   Widget build(BuildContext context) {
@@ -59,73 +62,81 @@ class SubscriptionTile extends StatelessWidget {
 
     final isSoon = days <= 3; 
 
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
-        child: Opacity(
-          opacity: isPaused ? 0.5 : 1,
-          child: Row(
-            children: [
-              Hero(
-                tag: 'monogram-${subscription.id}',
-                child: Monogram(
-                  name: subscription.name,
-                  color: subscription.category.color,
+    return Material(
+      color: selected
+          ? colors.primary.withValues(alpha: 0.08)
+          : Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
+          child: Opacity(
+            opacity: isPaused ? 0.5 : 1,
+            child: Row(
+              children: [
+                HeroMode(
+                  enabled: !AppLayout.of(context).twoPane,
+                  child: Hero(
+                    tag: 'monogram-${subscription.id}',
+                    child: Monogram(
+                      name: subscription.name,
+                      color: subscription.category.color,
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 14),
-          
-              // Expanded
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                const SizedBox(width: 14),
+            
+                // Expanded
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        subscription.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        status,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: isSoon ? colors.primary : colors.onSurfaceVariant,
+                          fontWeight: isSoon ? FontWeight.w700 : null,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                const SizedBox(width: 12,),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      subscription.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.titleMedium
-                      ?.copyWith(fontWeight: FontWeight.w700),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      status,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: isSoon ? colors.primary : colors.onSurfaceVariant,
-                        fontWeight: isSoon ? FontWeight.w700 : null,
+                      formatCents(subscription.priceCents),
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        fontFeatures: tabularFigures,
+                        color: onTrial ? colors.onSurfaceVariant : null,
                       ),
+                    ),
+                    Text(
+                      onTrial
+                        ? 'after trial'
+                        : '/${subscription.cycle.shortLabel}',
+                      style: theme.textTheme.bodySmall
+                          ?.copyWith(color: colors.onSurfaceVariant),
                     ),
                   ],
                 ),
-              ),
-              
-              const SizedBox(width: 12,),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    formatCents(subscription.priceCents),
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      fontFeatures: tabularFigures,
-                      color: onTrial ? colors.onSurfaceVariant : null,
-                    ),
-                  ),
-                  Text(
-                    onTrial
-                      ? 'after trial'
-                      : '/${subscription.cycle.shortLabel}',
-                    style: theme.textTheme.bodySmall
-                        ?.copyWith(color: colors.onSurfaceVariant),
-                  ),
-                ],
-              ),
-          
-            ],
+            
+              ],
+            ),
           ),
         ),
       ),

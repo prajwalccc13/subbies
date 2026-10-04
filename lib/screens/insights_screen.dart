@@ -6,6 +6,7 @@ import 'package:subbies/models/subscription.dart';
 import 'package:subbies/state/subscriptions_controller.dart';
 import 'package:subbies/theme/app_theme.dart';
 import 'package:subbies/utils/money.dart';
+import 'package:subbies/layout/app_layout.dart';
 
 class InsightsScreen extends StatelessWidget {
   const InsightsScreen({super.key});
@@ -33,54 +34,59 @@ class InsightsScreen extends StatelessWidget {
         ),
       );
     } else {
-      body = ListView(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-        children: [
-          Text(
-            'Monthly spend by category',
-            style: theme.textTheme.titleMedium
-                ?.copyWith(fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 20),
-          for (final entry in categories)
-            _CategoryBar(
-              category: entry.key,
-              cents: entry.value,
-              fraction: entry.value / total, // e.g. 0.4 = 40% of the total
-            ),
-          const SizedBox(height: 8),
-          Material(
-            color: colors.surfaceContainerLowest,
-            borderRadius: BorderRadius.circular(20),
-            child: Column(
-              children: [
-                _StatRow(
-                  label: 'Per year',
-                  value: formatCents(controller.yearlyTotalCents),
+      body =LayoutBuilder(
+        builder: (context, constraints) {
+          final gutter = centeredGutter(constraints.maxWidth);
+          return ListView(
+            padding: EdgeInsets.fromLTRB(gutter, 8, gutter, 32),
+            children: [
+              Text(
+                'Monthly spend by category',
+                style: theme.textTheme.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 20),
+              for (final entry in categories)
+                _CategoryBar(
+                  category: entry.key,
+                  cents: entry.value,
+                  fraction: entry.value / total, // e.g. 0.4 = 40% of the total
                 ),
-                const Divider(indent: 16, endIndent: 16),
-                _StatRow(
-                  label: 'Average subscription',
-                  value:
-                      '${formatCents(total / controller.chargingCount)}/mo',
+              const SizedBox(height: 8),
+              Material(
+                color: colors.surfaceContainerLowest,
+                borderRadius: BorderRadius.circular(20),
+                child: Column(
+                  children: [
+                    _StatRow(
+                      label: 'Per year',
+                      value: formatCents(controller.yearlyTotalCents),
+                    ),
+                    const Divider(indent: 16, endIndent: 16),
+                    _StatRow(
+                      label: 'Average subscription',
+                      value:
+                          '${formatCents(total / controller.chargingCount)}/mo',
+                    ),
+                    if (priciest != null) ...[
+                      const Divider(indent: 16, endIndent: 16),
+                      _StatRow(label: 'Most expensive', value: priciest.name),
+                    ],
+          
+                    // a little motivation for pausing things you don't use.
+                    if (controller.pausedMonthlyCents > 0) ...[
+                      const Divider(indent: 16, endIndent: 16),
+                      _StatRow(
+                        label: 'Saved by pausing',
+                        value: '${formatCents(controller.pausedMonthlyCents)}/mo',
+                      ),
+                    ],
+                  ],
                 ),
-                if (priciest != null) ...[
-                  const Divider(indent: 16, endIndent: 16),
-                  _StatRow(label: 'Most expensive', value: priciest.name),
-                ],
-
-                // a little motivation for pausing things you don't use.
-                if (controller.pausedMonthlyCents > 0) ...[
-                  const Divider(indent: 16, endIndent: 16),
-                  _StatRow(
-                    label: 'Saved by pausing',
-                    value: '${formatCents(controller.pausedMonthlyCents)}/mo',
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ],
+              ),
+            ],
+          );
+        }
       );
     }
 

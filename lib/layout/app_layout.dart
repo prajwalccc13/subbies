@@ -12,7 +12,6 @@ import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
 
-
 class AppLayout {
   const AppLayout._({
     required this.usesRail,
@@ -22,19 +21,31 @@ class AppLayout {
 
   factory AppLayout.forWidth(double width) {
     if (width < 600) {
-      return const AppLayout._(usesRail: false, extendedRail: false, twoPane: false);
+      return const AppLayout._(
+        usesRail: false,
+        extendedRail: false,
+        twoPane: false,
+      );
     }
     if (width < 840) {
-      return const AppLayout._(usesRail: false, extendedRail: false, twoPane: false);
+      return const AppLayout._(
+        usesRail: true,
+        extendedRail: false,
+        twoPane: false,
+      );
     }
     if (width < 1200) {
-      return const AppLayout._(usesRail: false, extendedRail: false, twoPane: false);
+      return const AppLayout._(
+        usesRail: true,
+        extendedRail: false,
+        twoPane: true,
+      );
     }
-    return const AppLayout._(usesRail: false, extendedRail: false, twoPane: false);
+    return const AppLayout._(usesRail: true, extendedRail: true, twoPane: true);
   }
 
-  static AppLayout of(BuildContext context) => 
-    AppLayout.forWidth(MediaQuery.sizeOf(context).width);
+  static AppLayout of(BuildContext context) =>
+      AppLayout.forWidth(MediaQuery.sizeOf(context).width);
 
   final bool usesRail;
   final bool extendedRail;
@@ -43,6 +54,6 @@ class AppLayout {
 
 double centeredGutter(
   double availableWidth, {
-    double maxWidth = 720,
-    double minGutter = 20,
+  double maxWidth = 720,
+  double minGutter = 20,
 }) => math.max(minGutter, (availableWidth - maxWidth) / 2);

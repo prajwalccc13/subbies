@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:subbies/models/subscription.dart';
-import 'package:subbies/screens/edit_subscription_screen.dart';
 import 'package:subbies/state/subscriptions_controller.dart';
 import 'package:subbies/theme/app_theme.dart';
 import 'package:subbies/utils/money.dart';
@@ -12,16 +12,9 @@ import 'package:subbies/widgets/subscription_tile.dart';
 
 
 class SubscriptionsScreen extends StatelessWidget {
-  const SubscriptionsScreen({super.key});
+  const SubscriptionsScreen({super.key, this.selectedId});
 
-
-  void _openEditor(BuildContext context, {Subscription? existing}) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => EditSubscriptionScreen(existing: existing),
-      )
-    );
-  }
+  final String? selectedId;
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +32,7 @@ class SubscriptionsScreen extends StatelessWidget {
 
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _openEditor(context),
+        onPressed: () => context.go('/subscriptions/new'),
         tooltip: 'Add subscription',
         child: const Icon(Icons.add),
       ),
@@ -68,7 +61,7 @@ class SubscriptionsScreen extends StatelessWidget {
                     subscription: endingTrial,
                     today: today,
                     onTap: () =>
-                        _openEditor(context, existing: endingTrial),
+                        context.go('/subscriptions/${endingTrial.id}'),
                   ),
                 ),
               ),
@@ -83,7 +76,8 @@ class SubscriptionsScreen extends StatelessWidget {
                   child: _SubscriptionGroup(
                     subscriptions: subscriptions,
                     today: today,
-                    onTap: (s) => _openEditor(context, existing: s),
+                    selectedId: selectedId,
+                    onTap: (s) => context.go('/subscriptions/${s.id}'),
                   )
                 )
               ),
@@ -229,11 +223,13 @@ class _SubscriptionGroup extends StatelessWidget {
   const _SubscriptionGroup({
     required this.subscriptions,
     required this.today,
+    required this.selectedId,
     required this.onTap,
   });
 
   final List<Subscription> subscriptions;
   final DateTime today;
+  final String? selectedId;
   final ValueChanged<Subscription> onTap;
 
   @override
@@ -251,6 +247,7 @@ class _SubscriptionGroup extends StatelessWidget {
             SubscriptionTile(
               subscription: subscriptions[i], 
               today: today, 
+              selected: subscriptions[i].id == selectedId,
               onTap: () => onTap(subscriptions[i]),
             ),
           ],

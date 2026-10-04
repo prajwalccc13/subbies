@@ -36,13 +36,13 @@ class AppTheme {
   );
 
   static ThemeData _build(ColorScheme colors) {
-    final base = ThemeData(
-      useMaterial3: true,
+    final base = ThemeData.light(useMaterial3: true).copyWith(
       colorScheme: colors,
       scaffoldBackgroundColor: colors.surface,
     );
 
-    final text = GoogleFonts.manropeTextTheme(base.textTheme).apply(
+    final text = base.textTheme.apply(
+      fontFamily: GoogleFonts.manrope().fontFamily,
       bodyColor: colors.onSurface,
       displayColor: colors.onSurface,
     );
@@ -73,6 +73,18 @@ class AppTheme {
         labelTextStyle: WidgetStatePropertyAll(
           text.labelMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
+      ),
+
+      // the side rail, styled to match the bottom bar.
+      navigationRailTheme: NavigationRailThemeData(
+        backgroundColor: colors.surface,
+        indicatorColor: colors.primary.withValues(alpha: 0.14),
+        selectedIconTheme: IconThemeData(color: colors.onSurface),
+        unselectedIconTheme: IconThemeData(color: colors.onSurfaceVariant),
+        selectedLabelTextStyle:
+            text.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+        unselectedLabelTextStyle:
+            text.labelLarge?.copyWith(color: colors.onSurfaceVariant),
       ),
 
       // Divider 

@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:subbies/state/auth_controller.dart';
 import 'package:subbies/widgets/field_label.dart';
@@ -41,7 +42,7 @@ class _AuthScreenState extends State<AuthScreen> {
     });
 
     final auth = context.read<AuthController>();
-    final navigator = Navigator.of(context);
+    // final navigator = Navigator.of(context);
     final email = _emailController.text;
     final password = _passwordController.text;
 
@@ -51,7 +52,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
     if (!mounted) return;
     if (error == null) {
-      navigator.pop(); // Success: back to Settings
+      context.go('/settings'); // Success: back to Settings
     } else {
       setState(() {
         _isBusy = false;
