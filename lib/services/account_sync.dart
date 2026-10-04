@@ -7,11 +7,10 @@ import 'package:subbies/state/subscriptions_controller.dart';
 
 class AccountSync {
   AccountSync({
-    required SubscriptionsController subscriptions,
+    required this._subscriptions,
     required SubscriptionRepository localRepository,
     required SubscriptionRepository Function(String userId) cloudRepositoryFor,
-  })  : _subscriptions = subscriptions,
-        _local = localRepository,
+  })  : _local = localRepository,
         _cloudFor = cloudRepositoryFor;
 
   final SubscriptionsController _subscriptions;

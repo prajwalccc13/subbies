@@ -65,6 +65,27 @@ class SettingsScreen extends StatelessWidget {
     if (confirmed == true) await auth.signOut();
   }
 
+    // NEW
+  Future<void> _deleteAccount(BuildContext context) async {
+    final auth = context.read<AuthController>();
+    final messenger = ScaffoldMessenger.of(context);
+
+    // The dialog returns the typed password, or null if cancelled.
+    final password = await showDialog<String>(
+      context: context,
+      builder: (context) => const _DeleteAccountDialog(),
+    );
+    if (password == null || password.isEmpty) return;
+
+    final error = await auth.deleteAccount(password);
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(error ?? 'Your account and its data have been deleted.'),
+      ),
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsController>();
@@ -92,35 +113,50 @@ class SettingsScreen extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               child: auth.isSignedIn
                   // Signed in: who, plus a way out.
-                  ? Row(
-                      children: [
-                        Icon(Icons.cloud_done_outlined, color: colors.primary),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Synced to',
-                                style: theme.textTheme.bodySmall
-                                    ?.copyWith(color: colors.onSurfaceVariant),
+                  ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                          children: [
+                            Icon(Icons.cloud_done_outlined, color: colors.primary),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Synced to',
+                                    style: theme.textTheme.bodySmall
+                                        ?.copyWith(color: colors.onSurfaceVariant),
+                                  ),
+                                  Text(
+                                    auth.email ?? 'your account',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: theme.textTheme.bodyMedium
+                                        ?.copyWith(fontWeight: FontWeight.w600),
+                                  ),
+                                ],
                               ),
-                              Text(
-                                auth.email ?? 'your account',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.bodyMedium
-                                    ?.copyWith(fontWeight: FontWeight.w600),
-                              ),
-                            ],
-                          ),
-                        ),
+                            ),
+                            TextButton(
+                              onPressed: () => _confirmSignOut(context),
+                              child: const Text('Sign out'),
+                            ),
+
+                            const SizedBox(height: 8),
                         TextButton(
-                          onPressed: () => _confirmSignOut(context),
-                          child: const Text('Sign out'),
+                          onPressed: () => _deleteAccount(context),
+                          style: TextButton.styleFrom(
+                            foregroundColor: colors.error,
+                            padding: EdgeInsets.zero,
+                          ),
+                          child: const Text('Delete account'),
                         ),
-                      ],
-                    )
+                          ],
+                        ),
+                    ],
+                  )
                   // Signed out: the invitation.
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -203,6 +239,65 @@ class SettingsScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// The confirmation dialog. It's a StatefulWidget because it owns a
+// TextEditingController, which must be disposed when the dialog closes.
+class _DeleteAccountDialog extends StatefulWidget {
+  const _DeleteAccountDialog();
+
+  @override
+  State<_DeleteAccountDialog> createState() => _DeleteAccountDialogState();
+}
+
+class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
+  final _password = TextEditingController();
+
+  @override
+  void dispose() {
+    _password.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return AlertDialog(
+      title: const Text('Delete your account?'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min, // As tall as its content, no taller
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Plain and honest: what happens, and that it's permanent.
+          const Text(
+            "This permanently deletes your account and every subscription "
+            "saved in it. It can't be undone.",
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _password,
+            obscureText: true,
+            autofocus: true,
+            decoration: const InputDecoration(
+              hintText: 'Enter your password to confirm',
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(_password.text),
+          style: TextButton.styleFrom(foregroundColor: colors.error),
+          child: const Text('Delete forever'),
+        ),
+      ],
     );
   }
 }

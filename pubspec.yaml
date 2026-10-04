@@ -55,6 +55,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.8
 flutter:
 
   # The following line ensures that the Material Icons font is
@@ -92,3 +94,24 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/icon.png"
+  remove_alpha_ios: true 
+  adaptive_icon_background: "#0E7C66"
+  adaptive_icon_foreground: "assets/icon/icon_foreground.png"
+  adaptive_icon_monochrome: "assets/icon/icon_monochrome.png"
+
+flutter_native_splash:
+  color: "#F2F3F5"
+  color_dark: "#111317"
+  image: assets/splash/splash.png
+  image_dark: assets/splash/splash.png
+  
+  android_12:
+    image: assets/splash/splash_android12.png
+    icon_background_color: "#0E7C66"
+    icon_background_color_dark: "#0E7C66"
+    color: "#F2F3F5"
+    color_dark: "#111317"

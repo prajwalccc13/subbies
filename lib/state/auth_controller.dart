@@ -14,9 +14,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
 class AuthController extends ChangeNotifier {
-  AuthController(this._auth) {
-    // authStateChanges() is a stream: it sends the current user right away
-    // (or null if signed out), then again every time someone signs in/out.
+  AuthController(
+    this._auth, {
+    this._deleteUserData,
+  }) {
     _authChanges = _auth.authStateChanges().listen((user) {
       _user = user;
       notifyListeners();
@@ -24,6 +25,7 @@ class AuthController extends ChangeNotifier {
   }
 
   final FirebaseAuth _auth;
+  final Future<void> Function(String userId)? _deleteUserData;
   late final StreamSubscription<User?> _authChanges;
   User? _user;
 
@@ -68,10 +70,6 @@ class AuthController extends ChangeNotifier {
     }
   }
 
-  // `||` in a switch case = "any of these codes".
-  // Note: for security, Firebase gives the same 'invalid-credential' code for
-  // "no such account" and "wrong password". Otherwise attackers could use
-  // the sign-in form to discover which emails have accounts.
   static String _friendlyMessage(String code) => switch (code) {
         'invalid-email' => "That email address doesn't look right.",
         'invalid-credential' ||
@@ -86,6 +84,24 @@ class AuthController extends ChangeNotifier {
         'network-request-failed' => 'No internet connection.',
         _ => 'Something went wrong ($code).',
       };
+
+  Future<String?> deleteAccount(String password) => _run(() async {
+        final user = _auth.currentUser;
+        if (user == null || user.email == null) return;
+
+        await user.reauthenticateWithCredential(
+          EmailAuthProvider.credential(email: user.email!, password: password),
+        );
+
+        // 2. Delete their data WHILE still signed in. The security rules
+        //    only allow access to signed-in owners, so after step 3 it
+        //    would be impossible to remove.
+        await _deleteUserData?.call(user.uid);
+
+        // 3. Delete the account itself. This also signs them out, so
+        //    AccountSync switches the app back to (empty) phone storage.
+        await user.delete();
+      });
 
   @override
   void dispose() {

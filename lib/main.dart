@@ -44,7 +44,15 @@ Future<void> main() async {
         ChangeNotifierProvider(
           lazy: false,
           create: (context) {
-            final auth = AuthController(FirebaseAuth.instance);
+            final auth = AuthController(
+              FirebaseAuth.instance,
+              deleteUserData: (userId) async {
+                final cloud = FirestoreSubscriptionRepository(userId: userId);
+                for (final subscription in await cloud.fetchAll()) {
+                  await cloud.delete(subscription.id);
+                }
+              },
+            );
             final sync = AccountSync(
               subscriptions: context.read<SubscriptionsController>(),
               localRepository: localRepository,

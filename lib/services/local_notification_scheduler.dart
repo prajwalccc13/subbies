@@ -1,3 +1,5 @@
+import 'dart:ui' show Color;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
@@ -22,6 +24,7 @@ class LocalNotificationScheduler implements ReminderScheduler {
       channelDescription: 'A heads-up the day before something renews or a free trial ends.',
       importance: Importance.high,
       priority: Priority.high,
+      color: Color(0xFF0E7C66),
     ),
     iOS: DarwinNotificationDetails(),
   );
@@ -40,7 +43,7 @@ class LocalNotificationScheduler implements ReminderScheduler {
     }
 
     const settings = InitializationSettings(
-      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+      android: AndroidInitializationSettings('ic_notification'),
       iOS: DarwinInitializationSettings(
         requestAlertPermission: false,
         requestBadgePermission: false,
