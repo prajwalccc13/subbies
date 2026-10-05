@@ -34,6 +34,7 @@ class Subscription {
     required this.startDate,
     this.isFreeTrial = false,
     this.isPaused = false,
+    this.brandColor,
   });
 
   final String id;
@@ -45,6 +46,7 @@ class Subscription {
   final DateTime startDate;
   final bool isFreeTrial;
   final bool isPaused;
+  final int? brandColor;
 
 
   double get monthlyCents => switch(cycle) {
@@ -115,6 +117,7 @@ class Subscription {
     'startDate': startDate.toIso8601String(),
     'isFreeTrial': isFreeTrial, 
     'isPaused': isPaused,
+    'brandColor': brandColor,
   };
 
   factory Subscription.fromJson(Map<String, dynamic> json) => Subscription(
@@ -126,6 +129,7 @@ class Subscription {
     startDate: DateTime.parse(json['startDate'] as String),
     isFreeTrial: json['isFreeTrial'] as bool? ?? false,
     isPaused: json['isPaused'] as bool? ?? false,
+    brandColor: json['brandColor'] as int?,
   );
 
 }

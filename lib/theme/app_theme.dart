@@ -151,8 +151,15 @@ extension CategoryColor on SubscriptionCategory {
   };
 }
 
+extension SubscriptionColor on Subscription {
+  Color get color => 
+    brandColor != null ? Color(brandColor!) : category.color;
+}
+
 
 Color trialColor(BuildContext context) => 
   Theme.of(context).brightness == Brightness.dark
     ? const Color(0xFFF0B054)
     : const Color(0xFF9A5B00);
+
+

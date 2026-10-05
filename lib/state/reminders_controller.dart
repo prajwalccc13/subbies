@@ -21,13 +21,15 @@ class RemindersController extends ChangeNotifier {
     required this._scheduler,
     required this._settings,
     required this._subscriptions,
-  }){
+    this._isDemo, 
+  }) {
     _subscriptions.addListener(_onSubscriptionsChanged);
   }
 
   final ReminderScheduler _scheduler;
   final SettingsRepository _settings;
   final SubscriptionsController _subscriptions;
+  final bool Function()? _isDemo;
 
   bool _enabled = false;
   bool get enabled => _enabled;
@@ -87,6 +89,8 @@ class RemindersController extends ChangeNotifier {
   Future<void> _runSync() async {
     // Don't schedule from a half-loaded list.
     if (_subscriptions.isLoading) return;
+
+    if (_isDemo?.call() ?? false) return;
 
     // If one job in a .then() chain
     // fails, every job queued after it is skipped, and reminders would

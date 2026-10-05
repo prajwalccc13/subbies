@@ -83,7 +83,7 @@ class SubscriptionTile extends StatelessWidget {
                     tag: 'monogram-${subscription.id}',
                     child: Monogram(
                       name: subscription.name,
-                      color: subscription.category.color,
+                      color: subscription.color,
                     ),
                   ),
                 ),

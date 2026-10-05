@@ -9,9 +9,10 @@ import 'package:subbies/data/settings_repository.dart';
 import 'package:subbies/models/subscription.dart';
 import 'package:subbies/state/reminders_controller.dart';
 import 'package:subbies/state/subscriptions_controller.dart';
+   import 'package:subbies/data/in_memory_subscription_repository.dart';
 
 import 'fakes/fake_reminder_scheduler.dart';
-import 'fakes/fake_repositories.dart';
+// import 'fakes/fake_repositories.dart';
 
 Subscription sub(String id) => Subscription(
       id: id,
@@ -99,5 +100,33 @@ void main() {
     await restarted.load();
 
     expect(restarted.enabled, isTrue);
+  });
+
+
+  test('no reminders are scheduled for demo data', () async {
+    final subscriptions = SubscriptionsController(
+      InMemorySubscriptionRepository([sub('a')]),
+    );
+    await subscriptions.load();
+    final scheduler = FakeReminderScheduler();
+    var demo = false;
+    final reminders = RemindersController(
+      scheduler: scheduler,
+      settings: SettingsRepository(),
+      subscriptions: subscriptions,
+      isDemo: () => demo, // We control the answer from the test
+    );
+    await reminders.load();
+    await reminders.setEnabled(true);
+    final realSchedule = scheduler.lastScheduled;
+
+    demo = true;
+    await subscriptions.switchTo(
+      InMemorySubscriptionRepository([sub('x'), sub('y'), sub('z')]),
+    );
+    await reminders.pendingSync;
+
+    // Still the real schedule: the demo's three subscriptions were ignored.
+    expect(scheduler.lastScheduled, same(realSchedule));
   });
 }

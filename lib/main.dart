@@ -52,15 +52,30 @@ Future<void> main() async {
         ),
         ChangeNotifierProvider(
           lazy: false,
-          create: (context) => RemindersController(
-            scheduler: scheduler,
-            settings: SettingsRepository(),
+          create: (context) => AccountSync(
             subscriptions: context.read<SubscriptionsController>(),
-          )..load(),
+            localRepository: localRepository,
+            cloudRepositoryFor: (userId) =>
+                FirestoreSubscriptionRepository(userId: userId),
+          ),
         ),
         ChangeNotifierProvider(
           lazy: false,
           create: (context) {
+            final sync = context.read<AccountSync>();
+            return RemindersController(
+              scheduler: scheduler,
+              settings: SettingsRepository(),
+              subscriptions: context.read<SubscriptionsController>(),
+              isDemo: () => sync.isDemo,
+            )..load();
+          },
+        ),
+        ChangeNotifierProvider(
+          lazy: false,
+          create: (context) {
+            // CHANGED: uses the AccountSync from the provider above.
+            final sync = context.read<AccountSync>();
             final auth = AuthController(
               FirebaseAuth.instance,
               deleteUserData: (userId) async {
@@ -69,12 +84,6 @@ Future<void> main() async {
                   await cloud.delete(subscription.id);
                 }
               },
-            );
-            final sync = AccountSync(
-              subscriptions: context.read<SubscriptionsController>(),
-              localRepository: localRepository,
-              cloudRepositoryFor: (userId) =>
-                  FirestoreSubscriptionRepository(userId: userId),
             );
             auth.addListener(() => sync.handleUserChanged(auth.userId));
             return auth;

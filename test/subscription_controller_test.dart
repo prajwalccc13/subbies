@@ -9,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:subbies/models/subscription.dart';
 import 'package:subbies/state/subscriptions_controller.dart';
+   import 'package:subbies/data/in_memory_subscription_repository.dart';
 
 import 'fakes/fake_repositories.dart';
 

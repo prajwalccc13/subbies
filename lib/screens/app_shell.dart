@@ -8,6 +8,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:subbies/services/account_sync.dart';
 
 import 'package:subbies/layout/app_layout.dart';
 
@@ -40,10 +42,11 @@ class AppShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final layout = AppLayout.of(context);
+    final isDemo = context.watch<AccountSync>().isDemo;
 
-    // Phones: bottom bar.
-    if (!layout.usesRail) {
-      return Scaffold(
+    final Widget content = !layout.usesRail
+      ? Scaffold(
+        // Phones: bottom bar.
         body: navigationShell,
         bottomNavigationBar: NavigationBar(
           selectedIndex: navigationShell.currentIndex,
@@ -57,10 +60,8 @@ class AppShell extends StatelessWidget {
               ),
           ],
         ),
-      );
-    }
-
-    return Scaffold(
+      ) 
+      : Scaffold(
       body: Row(
         children: [
           NavigationRail(
@@ -85,6 +86,24 @@ class AppShell extends StatelessWidget {
           Expanded(child: navigationShell),
         ],
       ),
+    );
+
+  if (!isDemo) return content;
+
+  return Column(
+      children: [
+        const _DemoBanner(),
+        Expanded(
+          // The banner already sits below the phone's status bar. Tell the
+          // screens below that the top is taken care of, so they don't add
+          // a second gap of the same height.
+          child: MediaQuery.removePadding(
+            context: context,
+            removeTop: true,
+            child: content,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -127,6 +146,51 @@ class _Brand extends StatelessWidget {
               ],
             )
           : tile,
+    );
+  }
+}
+
+class _DemoBanner extends StatelessWidget {
+  const _DemoBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    return Material(
+      color: colors.primary,
+      child: SafeArea(
+        bottom: false, // Only avoid the status bar at the top
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 6, 8, 6),
+          child: Row(
+            children: [
+              Icon(Icons.science_outlined, color: colors.onPrimary, size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  "You're exploring sample data. Changes aren't saved.",
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colors.onPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  // Leave any open demo subscription first: its page would
+                  // show "doesn't exist" once the real data is back.
+                  context.go('/subscriptions');
+                  context.read<AccountSync>().exitDemo();
+                },
+                style: TextButton.styleFrom(foregroundColor: colors.onPrimary),
+                child: const Text('Exit demo'),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

@@ -8,6 +8,7 @@ import 'package:subbies/theme/app_theme.dart';
 import 'package:subbies/utils/money.dart';
 import 'package:subbies/widgets/animated_amount.dart';
 import 'package:subbies/widgets/subscription_tile.dart';
+import 'package:subbies/services/account_sync.dart';
 
 
 
@@ -288,6 +289,14 @@ class _EmptyState extends StatelessWidget {
             'music or your gym.',
             style: theme.textTheme.bodyMedium
                 ?.copyWith(color: colors.onSurfaceVariant),
+          ),
+          
+          const SizedBox(height: 20),
+          // an empty screen becomes an invitation to look around.
+          OutlinedButton.icon(
+            onPressed: () => context.read<AccountSync>().enterDemo(),
+            icon: const Icon(Icons.science_outlined),
+            label: const Text('Explore with sample data'),
           ),
         ],
       ),

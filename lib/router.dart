@@ -17,16 +17,22 @@ import 'package:subbies/screens/edit_subscription_screen.dart';
 import 'package:subbies/screens/insights_screen.dart';
 import 'package:subbies/screens/settings_screen.dart';
 import 'package:subbies/screens/subscriptions_layout.dart';
+import 'package:subbies/screens/demo_launcher.dart';
 
 
 final appRouter = GoRouter(
   initialLocation: '/subscriptions',
   routes: [
+    GoRoute(
+      path: '/demo',
+      builder: (context, state) => const DemoLauncher(),
+    ),
+
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) => 
         AppShell(navigationShell: navigationShell),
       branches: [
-        
+          
         // Tab 1: Subscriptions
         StatefulShellBranch(
           initialLocation: '/subscriptions',
