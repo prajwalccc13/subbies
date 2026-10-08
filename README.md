@@ -58,7 +58,7 @@ The app only ever talks to a `SubscriptionRepository` interface. There are three
 You'll need the Flutter SDK and a Firebase project of your own with Email/Password sign-in and Firestore enabled.
 
 ```bash
-git clone <this repo>
+git clone "https://github.com/prajwalccc13/subbies"
 cd subbies
 flutter pub get
 flutterfire configure   # connects the app to your Firebase project
