@@ -39,7 +39,7 @@ lib/
 
 The app only ever talks to a `SubscriptionRepository` interface. There are three implementations: device storage for signed-out use, Firestore for accounts, and an in-memory one that powers the demo and the tests. `AccountSync` is the single place that decides which one is active, so screens don't know or care where the data comes from.
 
-## Decisions worth mentioning
+## Decisions 
 
 **Money is stored as whole cents.** Floating-point numbers can't represent most prices exactly, so `9.99` is stored as `999` and only formatted at the last moment.
 
