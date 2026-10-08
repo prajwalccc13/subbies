@@ -89,6 +89,7 @@ class Subscription {
     return to.difference(from).inDays;
   } 
 
+  // The date of charge number `n`.
   DateTime _chargeDate(int n) => switch(cycle) {
     BillingCycle.weekly => 
       DateTime(startDate.year, startDate.month, startDate.day + 7 *n),
@@ -132,4 +133,26 @@ class Subscription {
     brandColor: json['brandColor'] as int?,
   );
 
+  /// every charge date from [from] to [to] (both days included),
+  /// oldest first. Paused subscriptions have none.
+  List<DateTime> chargeDatesBetween(DateTime from, DateTime to) {
+    if (isPaused) return const [];
+
+    final start = DateTime(from.year, from.month, from.day);
+    final end = DateTime(to.year, to.month, to.day);
+    final dates = <DateTime>[];
+
+    // `for (var n = 0; ; n++)` has no stop condition of its own: it runs
+    // until we `break` out of it, once we've gone past the end date.
+    for (var n = 0; ; n++) {
+      final date = _chargeDate(n);
+      if (date.isAfter(end)) break;
+      if (!date.isBefore(start)) dates.add(date);
+    }
+    return dates;
+
+  }
+
 }
+
+
